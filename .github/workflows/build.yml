@@ -1,0 +1,48 @@
+nombre:  SonarCloud 
+en: 
+  push: 
+    ramas: 
+      -  main 
+  pull_request: 
+    tipos: [ abierto , sincronizado , reabierto ] trabajos
+ : 
+  compilación: 
+    nombre:  compilar  y  analizar 
+    ejecuciones en:  Windows-últimos 
+    pasos: 
+      -  nombre:  configurar  usos de JDK 17 : acciones /setup-java@v3 con: java-version: 17 distribución: 'zulu' # Hay opciones de distribución alternativas disponibles. - usos: acciones/checkout@v3  
+         
+        
+           
+            
+        
+        con: 
+          fetch-profundidad:  0   # Los clones superficiales deben deshabilitarse para una mejor relevancia del análisis 
+      -  nombre:  Caché  Los paquetes de SonarCloud  usan: acciones/cache@v3 con: ruta: ~\sonar\cache clave: ${{ runner.os } } -claves de restauración de sonar: ${{ runner.os }}-sonar - nombre: ID del escáner Cache SonarCloud : usos del escáner cache-sonar : acciones/cache@v3 con: ruta: .\.sonar\ clave del escáner: $ {{ runner.os }}-sonar-escáner
+         
+        
+           
+             
+             
+          
+         
+         
+        
+           
+             
+          restaurar-claves:  ${{  runner.os  }}-sonar-scanner 
+      -  nombre:  Instale  el escáner SonarCloud  si: pasos.cache-sonar-scanner.outputs.cache-hit != 'true' shell: powershell ejecutar: |
+           
+         
+         
+          Nuevo elemento -Ruta .\.sonar\scanner -Directorio de tipo de elemento
+          Actualización de la herramienta dotnet dotnet-sonarscanner --tool-path .\.sonar\scanner
+      -  nombre:  compilar  y  analizar 
+        env: 
+          GITHUB_TOKEN:  ${{  secrets.GITHUB_TOKEN  }}   # Necesario para obtener información de relaciones públicas, si la hay 
+          SONAR_TOKEN:  ${{  secrets.SONAR_TOKEN  }} 
+        shell:  powershell 
+        run:  |
+          .\.sonar\scanner\dotnet-sonarscanner comenzar /k:"2atenea1_Simulador" /o:"2atenea1" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url=" https://sonarcloud.io"
+         dotnet build
+          .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="${{ secretos.SONAR_TOKEN }}"
